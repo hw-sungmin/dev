@@ -1,14 +1,11 @@
-#가상환경 추가  virtualenv --python=python3.12.6 venv
+#가상환경 추가  virtualenv --python=python3.12.6 venv /// python3 -m venv venv
 #가상환경 실행  source venv/bin/activate
 #가상환경 종료  deactivate
 #셀레니움 설치  pip install selenium
 #webdriver_manager 설치 pip install webdriver_manager
 #크롬 드라이버 오토 인스톨러 설치   pip install chromedriver_autoinstaller
-#push  // git push -u orign main
 
-
-
-########## 검증 시 변경 필수 ##########
+########## 검증 시 변경 필수 ########## 
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -29,12 +26,17 @@ options = Options()
 options.binary_location = "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome"
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
 driver.maximize_window() #브라우저 최대화 설정
-driver.get("https://qa-crm.assistfit.co.kr/") #crm 메인 페이지 진입
+driver.get("https://pr-830.d2a534v2yra1r7.amplifyapp.com/") #crm 메인 페이지 진입
+
+driver.execute_script("window.localStorage.setItem(arguments[0], arguments[1]);", "popup-hidden-team-flex", "2025-07-24")
+
+driver.refresh()
+
 
 # 호출 횟수 추적용 변수
 wait_count = 0
 
-# 고유값 생성 (상품명)
+# 고유값 생성
 def generate_random_korean_name():
     korean_chars = [chr(i) for i in range(0xAC00, 0xD7A4)]  # 유니코드 한글 범위 (가 ~ 힣)
     return ''.join(random.choices(korean_chars, k=6))  # 랜덤 한글 6글자 생성
@@ -55,7 +57,7 @@ password_selector = "#password"
 login_button_selector = "body > section > div > div.w-full.bg-\[--netural-gray-scale-white\].rounded-lg.border.border-\[var\(--netural-gray-scale-100\].overflow-y-auto > div > div.w-full.flex.flex-col.gap-\[1\.25rem\] > div > form > div.flex.flex-col.gap-4 > button"
 
 # 아이디, 비밀번호 입력 및 로그인 버튼 클릭
-def login(id, password):
+def login(id, password):  
     global wait_count  # 글로벌 변수 선언
     try:
         # 아이디 입력 호출 대기 및 값 입력
@@ -66,18 +68,18 @@ def login(id, password):
         id_field = driver.find_element(By.CSS_SELECTOR, id_selector)
         id_field.clear()
         id_field.send_keys("01043931593")
-        print("아이디 입력 완료")
+        print("1. 아이디 입력 완료")
 
         # 비밀번호 입력 호출 대기 및 값 입력
         password_field = driver.find_element(By.CSS_SELECTOR, password_selector)
         password_field.clear()
         password_field.send_keys("qwer1234")
-        print("비밀번호 입력 완료")
+        print("2. 비밀번호 입력 완료")
 
         # 로그인 버튼 클릭
         login_button = driver.find_element(By.CSS_SELECTOR, login_button_selector)
         login_button.click()
-        print("로그인 버튼 클릭 완료")
+        print("3. 로그인 버튼 클릭 완료")
 
     except Exception as e:
         print(f"!!!!! 로그인 과정에서 오류 발생: {e} !!!!!")
@@ -88,8 +90,7 @@ user_password = "your_password"
 login(user_id, user_password)
 time.sleep(1)
 
-
-# 프랜차이즈 선택
+#프랜차이즈 선택 최상단 프랜차이즈 셀렉터 설정
 franchise_selector = "body > section > div > div.w-full.bg-\[--netural-gray-scale-white\].rounded-lg.border.border-\[var\(--netural-gray-scale-100\].overflow-y-auto > div > div > div.flex-1.flex.flex-col.gap-\[1\.25rem\].py-\[1\.875rem\] > a:nth-child(1)"
 
 # 첫 번째 프랜차이즈 선택
@@ -103,51 +104,40 @@ def select_first_franchise():
         )
         franchise = driver.find_element(By.CSS_SELECTOR, franchise_selector)
         franchise.click()
-        print("첫 번째 프랜차이즈 선택 완료")
+        print("4. 첫 번째 프랜차이즈 선택 완료")
 
     except (NoSuchElementException, TimeoutException):
         print("!!!!! 프랜차이즈 선택 관련 오류 발생 !!!!!")
 
+# 프랜차이즈 선택
 select_first_franchise()
 time.sleep(1)
 
+#이벤트 공지 닫기
+event_close_selector = "body > div.fixed.inset-0.z-50.bg-black\/60.flex.items-center.justify-center > div > div > button:nth-child(2)"
 
-#현재 센터 선택 후 특정 지점 선택
-center_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > nav > button"
-center_xpath = "//button[text()='청담']"  ########## 검증 시 변경 항목 (테스트 환경에 맞는 지점명) ###########
-
-#현재 센터 선택 및 지점 변경
-def select_center():
-    global wait_count # 글로벌 변수 선언
+def event_close():
+    global wait_count
     try:
-        #현재 센터 호출 대기
         wait_count += 1
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By.CSS_SELECTOR, center_selector))
+        WebDriverWait(driver, 2).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, event_close_selector))
         )
-        center = driver.find_element(By.CSS_SELECTOR, center_selector)
-        center.click()
-        print("현재 센터 선택 완료")
+        event = driver.find_element(By. CSS_SELECTOR, event_close_selector)
+        event.click()
+        print("이벤트 팝업 닫기 완료")
+    
+    except TimeoutException:
+        print("⏩ 이벤트 팝업 없음 (정상) → 계속 진행")
 
-        # 현재 센터 선택 후 딜레이 2초
-        time.sleep(1)
+    except (NoSuchElementException, Exception) as e:
+        print(f"⚠️ 이벤트 팝업 처리 중 오류 발생: {e}")
 
-        # 특정 지점 선택 호출 대기
-        wait_count += 1
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_element_located((By.XPATH, center_xpath))
-        )
-        center_select = driver.find_element(By.XPATH, center_xpath)
-        center_select.click()
-        print("특정 지점 선택 완료")
-        time.sleep(1)
-
-    except (NoSuchElementException, TimeoutException):
-        print("!!!!! 현재 센터 관련 오류 발생 !!!!!")
-
-select_center()
+event_close()
 time.sleep(1)
 
+
+#################### 테스트 코드 입력 ####################
 
 #센터 정보 선택 및 수정 동작
 center_informaiton_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > nav > ul > div > div:nth-child(2) > details > a:nth-child(2) > li"
@@ -277,11 +267,12 @@ member_datail_name_selector = "#username"
 member_datail_mobile_selector = "#mobileNumber"
 member_dropdown_selector = 'button.inline-flex.justify-between.w-full.bg-transparent'
 member_dropdown_option_xpath = "//button[text()='워크인']"
-item_add_selector = "#member-detail-create > div.flex.flex-col.gap-\[1\.875rem\] > div > div > div > a > button"
-item_add_save_selector = "body > div.flex.justify-center.items-center.fixed.inset-0.z-50.backdrop-filter.placeholder\:outline-none.focus\:outline-none.cursor-auto.duration-300.h-\[100svh\].bg-black\/60.backdrop-blur-sm > div > div > div > div > main > div > div > button"
-item_tab_PT_selector = "#member-detail-create > div.flex.flex-col.gap-\[1\.875rem\] > ul > li:nth-child(2) > button"
-item_tab_locker_selector = "#member-detail-create > div.flex.flex-col.gap-\[1\.875rem\] > ul > li:nth-child(3) > button"
-item_tab_equipment_selector = "#member-detail-create > div.flex.flex-col.gap-\[1\.875rem\] > ul > li:nth-child(4) > button"
+item_add_selector = "#member-detail-create > div.flex.flex-col.gap-4 > div > div > a > button"
+item_add_save_selector = "body > div.flex.justify-center.items-center.fixed.inset-0.z-50.backdrop-filter.placeholder\:outline-none.focus\:outline-none.cursor-auto.duration-300.h-\[100svh\].bg-black\/60.backdrop-blur-sm > div > div > div > div > main > div > button"
+item_tab_GX_selector = "#member-detail-create > div.flex.flex-col.gap-4 > div > ul > li:nth-child(2) > button > p"
+item_tab_PT_selector = "#member-detail-create > div.flex.flex-col.gap-4 > div > ul > li:nth-child(3) > button > p"
+item_tab_locker_selector = "#member-detail-create > div.flex.flex-col.gap-4 > div > ul > li:nth-child(4) > button > p"
+item_tab_equipment_selector = "#member-detail-create > div.flex.flex-col.gap-4 > div > ul > li:nth-child(5) > button > p"
 member_save_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > footer > div > button"
 member_secession_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div.w-full.px-10.flex.justify-between.items-center.pt-5.pb-2\.5 > ul > li:nth-child(2) > button"
 member_refund_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div.w-full.px-10.flex.justify-between.items-center.pt-5.pb-2\.5 > ul > li:nth-child(3) > button"
@@ -408,6 +399,53 @@ def member_admin():
         item_add_confirm.click()
         print("닫기 선택 완료")
         time.sleep(1)
+
+  
+#그룹 수업 탭 선택 호출 대기
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, item_tab_GX_selector))
+        )
+        item_tab_GX = driver.find_element(By.CSS_SELECTOR, item_tab_GX_selector)
+        item_tab_GX.click()
+        print("그룹 수업 탭 선택 완료")
+
+        # 그룹 수업 탭 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #그룹 수업 상품 등록 선택 호출 대기
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, item_add_selector))
+        )
+        item_add = driver.find_element(By.CSS_SELECTOR, item_add_selector)
+        item_add.click()
+        print("상품 등록 선택 완료")
+
+        #그룹 수업 상품 등록 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #그룹 수업 상품 등록 저장 선택 호출 대기
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, item_add_save_selector))
+        )
+        item_add_save = driver.find_element(By.CSS_SELECTOR, item_add_save_selector)
+        item_add_save.click()
+        print("상품 저장 선택 완료")
+
+        #상품 선택 후 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #상품 등록 완료 확인 팝업 _ 닫기 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By.CSS_SELECTOR, item_add_confirm_selector))
+        )
+        item_add_confirm = driver.find_element(By.CSS_SELECTOR, item_add_confirm_selector)
+        item_add_confirm.click()
+        print("닫기 선택 완료")
+
 
         #개인 레슨 탭 선택 호출 대기
         wait_count += 1
@@ -683,7 +721,7 @@ def member_admin():
         print("!!!!! 회원 관리 관련 오류 발생 !!!!!")
 
 member_admin()
-time.sleep(1)   
+time.sleep(1)
 
 
 #직원 관리 동작
@@ -691,10 +729,13 @@ employee_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] 
 employee_add_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > footer > a > button"
 employee_create_name_selector = "#name"
 employee_create_mobile_selector = "#mobileNumber"
+employee_member_selector = "#employee-create > div.p-5.flex.flex-col.gap-4.white-box.bg-\[--netural-gray-scale-white\] > div.grid.grid-cols-3.gap-4 > div:nth-child(1) > div.absolute.right-4.flex.items-center.gap-2"
+employee_GX_selector = "#employee-create > div.p-5.flex.flex-col.gap-4.white-box.bg-\[--netural-gray-scale-white\] > div.grid.grid-cols-3.gap-4 > div:nth-child(2) > div.absolute.right-4.flex.items-center.gap-2"
+employee_PT_selector = "#employee-create > div.p-5.flex.flex-col.gap-4.white-box.bg-\[--netural-gray-scale-white\] > div.grid.grid-cols-3.gap-4 > div:nth-child(3) > div.absolute.right-4.flex.items-center.gap-2"
 employee_add_save_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > footer > div > button"
 employee_info_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.flex-col.gap-4.pt-5 > div > table > tbody > tr:nth-child(1)"
-employee_info_revise_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div > div.pt-\[1\.875rem\].flex.flex-col.gap-10.bg-\[var\(--netural-gray-scale-white\)\].px-10 > div > div.flex.col-span-2.gap-5.pt-6 > div.flex.flex-col.gap-4 > a > button"
-employee_info_revise_save_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > footer > div > button"
+employee_info_revise_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.px-10.pt-\[1\.875rem\].flex.flex-col.bg-\[--netural-gray-scale-white\] > div > div.flex.col-span-2.gap-5.pt-6 > div.flex.flex-col.gap-4 > a > button"
+employee_info_revise_save_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > footer > div > button"
 employee_default_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-\[0\.625rem\] > ul > li:nth-child(1) > button"
 employee_fire_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-\[0\.625rem\] > ul > li:nth-child(2) > button"
 employee_fire_info_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-\[0\.625rem\] > button"
@@ -795,6 +836,37 @@ def employee_admin():
         # 아이디, 비밀번호 입력 후 2초 딜레이
         time.sleep(1)
 
+        #수업 권한 설정
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, employee_member_selector))
+        )
+        employee_member = driver.find_element(By. CSS_SELECTOR, employee_member_selector)
+        employee_member.click()
+        print("회원권 권한 전체 선택 완료")
+        time.sleep(1)
+
+        #수업 권한 설정
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, employee_GX_selector))
+        )
+        employee_GX = driver.find_element(By. CSS_SELECTOR, employee_GX_selector)
+        employee_GX.click()
+        print("그룹 수업 권한 전체 선택 완료")
+        time.sleep(1)
+
+        #수업 권한 설정
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, employee_PT_selector))
+        )
+        employee_PT = driver.find_element(By. CSS_SELECTOR, employee_PT_selector)
+        employee_PT.click()
+        print("개인 레슨 권한 전체 선택 완료")
+        time.sleep(1)
+
+
         #직원 등록_저장 호출 대기
         wait_count += 1
         WebDriverWait(driver, 10).until(
@@ -855,13 +927,18 @@ product_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] >
 product_app_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.w-fit.gap-4.border-b.border-\[--netural-gray-scale-100\] > li:nth-child(2) > button"
 product_deactivate_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.w-fit.gap-4.border-b.border-\[--netural-gray-scale-100\] > li:nth-child(3) > button"
 product_all_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.w-fit.gap-4.border-b.border-\[--netural-gray-scale-100\] > li:nth-child(1) > button"
-product_pt_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(2) > button"
-product_locker_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(3) > button"
-product_sports_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(4) > button"
-product_default_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(1) > button"
+product_gx_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(2) > button"
+product_pt_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(3) > button"
+product_locker_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(4) > button"
+product_sports_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(5) > button"
+product_default_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.w-full.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(1) > button"
 product_add_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > footer > a > button"
+product_add_category_selector = "#FC-create-form > div:nth-child(3) > div.flex.flex-col.gap-4 > div:nth-child(2) > div > div"
+product_add_category_dropdown_Xpath = "//button[text()='설정된카테고리_01']"
 product_add_name_selector = "#productName"
-product_add_drop_selector = "button.inline-flex.justify-between.w-full"
+product_add_drop_selector = "#FC-create-form > div:nth-child(4) > div.flex.flex-col.gap-4 > div > div > div.flex.flex-col.gap-2\.5 > div"
+product_add_drop_locker_selector = "#LOCKER-create-form > div:nth-child(4) > div.p-5.white-box.flex.flex-col.gap-4 > div > div.flex.flex-col.gap-2\.5 > div"
+product_add_drop_sport_selector = "#SPORTS_EQUIPMENT-create-form > div:nth-child(3) > div.p-5.white-box.flex.flex-col.gap-4 > div > div.flex.flex-col.gap-2\.5 > div"
 product_add_dropdown_Xpath = "//button[text()='3개월']"
 product_add_pause_Xpath = "//p[contains(text(), '정지 설정')]/following::button[1]"
 product_add_pausecount_Xpath = "//p[contains(text(), '정지 가능 횟수 제한')]/following::button[1]"
@@ -870,20 +947,28 @@ product_add_date_selector = "#reschedulingAvailableDate"
 product_add_min_date_Xpath = "//p[contains(text(), '최소 정지 가능일 제한')]/following::button[1]"
 product_add_mindate_selector = "#reschedulingMinDate"
 product_add_money_selector = "#amount"
-product_add_save_selector = "#fc-create-form-btn"
+product_add_save_selector = "#FC-create-form-btn"
+product_add_gx_selector = "#GX"
 product_add_pt_selector = "#PT"
-product_add_count_selector = "#COUNT"
+product_add_count_gx_selector = "#GX-create-form > div:nth-child(3) > div.flex.flex-col.gap-4 > div:nth-child(2) > ul > li:nth-child(2) > button"
+product_add_countAll_selector = "#GX-create-form > div:nth-child(4) > div.flex.flex-col.gap-4 > div:nth-child(1) > ul > li:nth-child(2) > button"
+product_add_category_gx_selector = "#GX-create-form > div:nth-child(3) > div.flex.flex-col.gap-4 > div:nth-child(2) > div > div"
+product_add_count_pt_selector = "#PT-create-form > div:nth-child(3) > div.flex.flex-col.gap-4 > div:nth-child(2) > ul > li:nth-child(2) > button"
+product_add_category_pt_selector = "#PT-create-form > div:nth-child(3) > div.flex.flex-col.gap-4 > div:nth-child(2) > div > div"
+product_add_cancel_selector = "#bookingCancelCount"
 product_add_usecount_selector = "#useCount"
-product_add_ptsave_selector = "#pt-create-form-btn"
+product_add_save_gx_selector = "#GX-create-form-btn"
+product_add_ptsave_selector = "#PT-create-form-btn"
 product_add_locker_selector = "#LOCKER"
-product_add_lockersave_selector = "#locker-create-form-btn"
+product_add_category_locker_selector = "#LOCKER-create-form > div:nth-child(3) > div.flex.flex-col.gap-4 > div:nth-child(2) > div > div"
+product_add_lockersave_selector = "#LOCKER-create-form-btn"
 product_add_sports_selector = "#SPORTS_EQUIPMENT"
-product_add_sportssave_selector = "#wears-create-form-btn"
+product_add_category_sport_selector = "#SPORTS_EQUIPMENT-create-form > div:nth-child(2) > div.flex.flex-col.gap-4 > div > div > div:nth-child(2) > div > div"
+product_add_sportssave_selector = "#SPORTS_EQUIPMENT-create-form-btn"
 product_revise_selector = "(//a[contains(@href, 'product') and contains(@href, 'update')])[1]"
 product_revise_save_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > footer > div > button"
 product_del_selector = "(//a[contains(@href, 'product') and contains(@href, 'delete')])[1]"
 product_del_save_selector = "body > div.flex.justify-center.items-center.fixed.inset-0.z-50.backdrop-filter.placeholder\:outline-none.focus\:outline-none.cursor-auto.duration-300.h-\[100svh\].rounded-md.bg-black\/60.backdrop-blur-sm > div > div > div > div > div.h-\[3\.125rem\].grid.grid-cols-2.font-medium > form > button"
-
 
 # "a[hrf*='product/delete?product'e]"
 # "a[href*='product/update?product']"
@@ -936,6 +1021,18 @@ def product_admin():
         print("전체 상품 선택 완료")
 
         #전체 상품 탭 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #그룹 수업 탭 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_gx_selector))
+        )
+        product_gx = driver.find_element(By. CSS_SELECTOR, product_gx_selector)
+        product_gx.click()
+        print("그룹 수업 탭 선택 완료")
+
+        #그룹 수업 탭 선택 후 딜레이 2초
         time.sleep(1)
 
         #개인 레슨 탭 선택
@@ -997,6 +1094,27 @@ def product_admin():
 
         #상품 추가 선택 후 딜레이 2초
         time.sleep(1)
+
+        #카테고리 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_category_selector))
+        )
+        product_add_category = driver.find_element(By. CSS_SELECTOR, product_add_category_selector)
+        product_add_category.click()
+        print("카테고리 드롭다운 선택 완료")
+
+        #드롭다운 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #카테고리 선택_2
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. XPATH, product_add_category_dropdown_Xpath))
+        )
+        product_add_category_dropdown = driver.find_element(By. XPATH, product_add_category_dropdown_Xpath)
+        product_add_category_dropdown.click()
+        print("카테고리 선택 완료")
 
         #회원권 상품 추가_상품명 입력
         wait_count += 1
@@ -1142,19 +1260,52 @@ def product_admin():
         #상품 추가 선택 후 딜레이 2초
         time.sleep(1)
 
-        #상품 유형 선택_개인 레슨
+        #상품 유형 선택_그룹 수업
         wait_count += 1
         WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_pt_selector))
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_gx_selector))
         )
-        product_add_pt = driver.find_element(By. CSS_SELECTOR, product_add_pt_selector)
-        product_add_pt.click()
-        print("상품 유형_개인 레슨 선택 완료")
+        product_add_gx = driver.find_element(By. CSS_SELECTOR, product_add_gx_selector)
+        product_add_gx.click()
+        print("상품 유형_그룹 수업 선택 완료")
 
-        #상품 유형_개인 레슨 선택 후 딜레이 2초
+        #상품 유형_그룹 수업 선택 후 딜레이 2초
         time.sleep(1)
 
-        #개인 레슨 상품 추가_상품명 입력
+        #상품 유형_횟수제 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_count_gx_selector))
+        )
+        product_add_count_gx = driver.find_element(By. CSS_SELECTOR, product_add_count_gx_selector)
+        product_add_count_gx.click()
+        print("상품 유형 횟수제 선택 완료")
+
+        #상품 유형_횟수제 선택 후 딜레이 2초
+        time.sleep(1)        
+
+        #카테고리 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_category_gx_selector))
+        )
+        product_add_gx_category = driver.find_element(By. CSS_SELECTOR, product_add_category_gx_selector)
+        product_add_gx_category.click()
+        print("카테고리 드롭다운 선택 완료")
+
+        #드롭다운 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #카테고리 선택_2
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. XPATH, product_add_category_dropdown_Xpath))
+        )
+        product_add_category_dropdown = driver.find_element(By. XPATH, product_add_category_dropdown_Xpath)
+        product_add_category_dropdown.click()
+        print("카테고리 선택 완료")        
+
+        #그룹 수업 상품 추가_상품명 입력
         wait_count += 1
         WebDriverWait(driver, 10).until(
             EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_name_selector))
@@ -1168,16 +1319,207 @@ def product_admin():
         #상품명 입력 후 딜레이 2초
         time.sleep(1)
 
+        #상품_횟수 종일제 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_countAll_selector))
+        )
+        product_add_all_count = driver.find_element(By. CSS_SELECTOR, product_add_countAll_selector)
+        product_add_all_count.click()
+        print("상품 횟수 종일제 선택 완료")
+
+        #상품 유형_종일제 선택 후 딜레이 2초
+        time.sleep(1)        
+
+        #이용 횟수 입력
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_usecount_selector))
+        )
+        product_add_usecount = driver.find_element(By. CSS_SELECTOR, product_add_usecount_selector)
+        product_add_usecount.clear
+        product_add_usecount.send_keys("10")
+        print("이용 횟수 입력 완료")
+
+        #이용 횟수 입력 후 딜레이 2초
+        time.sleep(1)
+
+        #취소 가능 횟수 입력
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_cancel_selector))
+        )
+        product_add_cancel = driver.find_element(By. CSS_SELECTOR, product_add_cancel_selector)
+        product_add_cancel.clear
+        product_add_cancel.send_keys("10")
+        print("취소 가능 횟수 입력 완료")
+
+        #이용 횟수 입력 후 딜레이 2초
+        time.sleep(1)
+
+        #정지 설정 ON
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. XPATH, product_add_pause_Xpath))
+        )
+        product_add_pause = driver.find_element(By. XPATH, product_add_pause_Xpath)
+        product_add_pause.click()
+        print("정지 설정 ON")
+
+        #토글 ON 후 1초
+        time.sleep(1)
+
+        #정지 가능일 입력
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_date_selector))
+        )
+        product_add_date = driver.find_element(By. CSS_SELECTOR, product_add_date_selector)
+        product_add_date.clear()
+        product_add_date.send_keys("100")
+        print("정지 가능일 입력 완료")
+
+        #정지 가능일 입력 후 딜레이 2초
+        time.sleep(1)
+
+        #정지 가능 횟수 제한 ON
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. XPATH, product_add_pausecount_Xpath))
+        )
+        product_add_pausecount = driver.find_element(By. XPATH, product_add_pausecount_Xpath)
+        product_add_pausecount.click()
+        print("정지 가능 횟수 제한 ON")
+        time.sleep(1)
+
+        #정지 가능 횟수 제한 입력
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_pause_count_selector))
+        )
+        product_add_pause_count = driver.find_element(By. CSS_SELECTOR, product_add_pause_count_selector)
+        product_add_pause_count.clear()
+        product_add_pause_count.send_keys("10")
+        print("가능 제한 횟수 입력 완료")
+        time.sleep(1)
+
+        #최소 정지 가능일 ON
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. XPATH, product_add_min_date_Xpath))
+        )
+        product_add_min_date = driver.find_element(By. XPATH, product_add_min_date_Xpath)
+        product_add_min_date.click()
+        print("최소 정지 가능일 ON")
+        time.sleep(1)
+
+        #최소 정지 가능일 입력
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_mindate_selector))
+        )
+        product_add_mindate = driver.find_element(By. CSS_SELECTOR, product_add_mindate_selector)
+        product_add_mindate.clear()
+        product_add_mindate.send_keys("10")
+        print("최소 정지 가능일 입력 완료")
+
+        #최소 정지 가능일 입력 후 딜레이 2초
+        time.sleep(1)
+
+        #금액 입력
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_money_selector))
+        )
+        product_add_money = driver.find_element(By. CSS_SELECTOR, product_add_money_selector)
+        product_add_money.clear()
+        product_add_money.send_keys("1500000")
+        print("금액 입력 완료")
+
+        #금액 입력 후 딜레이 2초
+        time.sleep(1)
+
+        #정보 입력 후 저장
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_save_gx_selector))
+        )
+        product_add_save_gx = driver.find_element(By. CSS_SELECTOR, product_add_save_gx_selector)
+        product_add_save_gx.click()
+        print("저장 선택 완료")
+
+        #저장 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #상품 추가 선택_2
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_selector))
+        )
+        product_add = driver.find_element(By. CSS_SELECTOR, product_add_selector)
+        product_add.click()
+        print("상품 추가 선택 완료")
+
+        #상품 추가 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #상품 유형 선택_개인 레슨
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_pt_selector))
+        )
+        product_add_pt = driver.find_element(By. CSS_SELECTOR, product_add_pt_selector)
+        product_add_pt.click()
+        print("상품 유형_개인 레슨 선택 완료")
+
+        #상품 유형_개인 레슨 선택 후 딜레이 2초
+        time.sleep(1)
+
         #상품 유형_횟수제 선택
         wait_count += 1
         WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_count_selector))
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_count_pt_selector))
         )
-        product_add_count = driver.find_element(By. CSS_SELECTOR, product_add_count_selector)
-        product_add_count.click()
+        product_add_count_pt = driver.find_element(By. CSS_SELECTOR, product_add_count_pt_selector)
+        product_add_count_pt.click()
         print("상품 유형 횟수제 선택 완료")
 
         #상품 유형_횟수제 선택 후 딜레이 2초
+        time.sleep(1)        
+
+        #카테고리 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_category_pt_selector))
+        )
+        product_add_pt_category = driver.find_element(By. CSS_SELECTOR, product_add_category_pt_selector)
+        product_add_pt_category.click()
+        print("카테고리 드롭다운 선택 완료")
+
+        #드롭다운 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #카테고리 선택_2
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. XPATH, product_add_category_dropdown_Xpath))
+        )
+        product_add_category_dropdown = driver.find_element(By. XPATH, product_add_category_dropdown_Xpath)
+        product_add_category_dropdown.click()
+        print("카테고리 선택 완료")        
+
+        #개인 레슨 상품 추가_상품명 입력
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_name_selector))
+        )
+        product_add_name = driver.find_element(By. CSS_SELECTOR, product_add_name_selector)
+        product_add_name.clear()
+        random_name = generate_random_korean_name()
+        product_add_name.send_keys(random_name)
+        print("상품명 입력 완료")
+
+        #상품명 입력 후 딜레이 2초
         time.sleep(1)
 
         #이용 횟수 입력
@@ -1311,6 +1653,27 @@ def product_admin():
         #상품 유형_개인 레슨 선택 후 딜레이 2초
         time.sleep(1)
 
+        #카테고리 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_category_locker_selector))
+        )
+        product_add_locker_category = driver.find_element(By. CSS_SELECTOR, product_add_category_locker_selector)
+        product_add_locker_category.click()
+        print("카테고리 드롭다운 선택 완료")
+
+        #드롭다운 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #카테고리 선택_2
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. XPATH, product_add_category_dropdown_Xpath))
+        )
+        product_add_category_dropdown = driver.find_element(By. XPATH, product_add_category_dropdown_Xpath)
+        product_add_category_dropdown.click()
+        print("카테고리 선택 완료")      
+
         #락커 상품 상품 추가_상품명 입력
         wait_count += 1
         WebDriverWait(driver, 10).until(
@@ -1328,10 +1691,10 @@ def product_admin():
         #기간 선택
         wait_count += 1
         WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_drop_selector))
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_drop_locker_selector))
         )
-        product_add_drop = driver.find_element(By. CSS_SELECTOR, product_add_drop_selector)
-        product_add_drop.click()
+        product_add_drop_locker = driver.find_element(By. CSS_SELECTOR, product_add_drop_locker_selector)
+        product_add_drop_locker.click()
         print("기간 드롭다운 선택 완료")
 
         #드롭다운 선택 후 딜레이 2초
@@ -1467,6 +1830,27 @@ def product_admin():
         #상품 유형_운동 용품 선택 후 딜레이 2초
         time.sleep(1)
 
+        #카테고리 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_category_sport_selector))
+        )
+        product_add_sport_category = driver.find_element(By. CSS_SELECTOR, product_add_category_sport_selector)
+        product_add_sport_category.click()
+        print("카테고리 드롭다운 선택 완료")
+
+        #드롭다운 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #카테고리 선택_2
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. XPATH, product_add_category_dropdown_Xpath))
+        )
+        product_add_category_dropdown = driver.find_element(By. XPATH, product_add_category_dropdown_Xpath)
+        product_add_category_dropdown.click()
+        print("카테고리 선택 완료")
+
         #운동 용품 추가_상품명 입력
         wait_count += 1
         WebDriverWait(driver, 10).until(
@@ -1484,10 +1868,10 @@ def product_admin():
         #기간 선택
         wait_count += 1
         WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_drop_selector))
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, product_add_drop_sport_selector))
         )
-        product_add_drop = driver.find_element(By. CSS_SELECTOR, product_add_drop_selector)
-        product_add_drop.click()
+        product_add_drop_sport = driver.find_element(By. CSS_SELECTOR, product_add_drop_sport_selector)
+        product_add_drop_sport.click()
         print("기간 드롭다운 선택 완료")
 
         #드롭다운 선택 후 딜레이 2초
@@ -1817,10 +2201,13 @@ time.sleep(1)
 #스케줄 관리 동작
 schedule_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > nav > ul > div > div:nth-child(2) > details > a:nth-child(8) > li"
 schedule_add_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div > div.max-h-\[calc\(100vh-12\.5rem\)\].border.border-\[--netural-gray-scale-100\].rounded-2xl.z-0.rbc-calendar > div > div.rbc-time-content > div:nth-child(2) > div.rbc-events-container"
+schedule_add_re_selector = "#taskStartTime"
+schedule_add_min_selector = "#create-schedule-form > div:nth-child(4) > div > div.flex.flex-col.gap-2 > div > button:nth-child(2)"
 schedule_add_member_selector = "#create-schedule-form > div.flex.gap-4.px-5.flex-1 > div > div.p-4.flex.flex-col.gap-4.max-h-\[15\.625rem\].overflow-y-auto.border.border-\[--netural-gray-scale-100\].rounded-2xl > div:nth-child(1)"
 schedule_add_member_product_selector = "#create-schedule-form article:first-of-type button"
 schedule_add_save_selector = "body > div.flex.justify-end.fixed.inset-0.z-50.outline-none.focus\:outline-none.bg-black\/60.cursor-auto.backdrop-filter.backdrop-blur-sm.duration-300 > div > div > div.flex-auto.overflow-y-auto > div > button"
 schedule_add_search_selector = "#search-member"
+
 
 
 def schedule_admin():
@@ -1838,7 +2225,7 @@ def schedule_admin():
         #스케줄 관리 선택 후 딜레이 2초
         time.sleep(1) 
 
-        #19시 스케줄 선택
+        #스케줄 선택
         wait_count += 1
         WebDriverWait(driver, 10).until(
             EC.presence_of_all_elements_located((By. CSS_SELECTOR, schedule_add_selector))
@@ -1850,6 +2237,44 @@ def schedule_admin():
         #스케줄 선택 후 딜레이 2초
         time.sleep(1)
 
+        #스케줄 일시 수정
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, schedule_add_re_selector))
+        )
+        schedule_add_re = driver.find_element(By. CSS_SELECTOR, schedule_add_re_selector)
+        schedule_add_re.click()
+        print("스케줄 선택 완료")
+
+        #스케줄 선택 후 딜레이 2초
+        time.sleep(1)        
+
+        #수업 시간 입력 동작
+        #방향키 아래 (오후 선택)
+        actions = ActionChains(driver)
+        actions.send_keys(Keys.ARROW_DOWN).perform()
+        
+        time.sleep(1)
+
+        #탭 동작 (시간 입력을 위해)
+        actions.send_keys(Keys.TAB).perform()
+        time.sleep(1)
+
+        #수업 시작 시간 입력
+        actions.send_keys("1400").perform()
+        print("수업 시작 시간 입력 완료")
+
+        time.sleep(1)
+
+        #30분 진행 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, schedule_add_min_selector))
+        )
+        schedule_add_min = driver.find_element(By. CSS_SELECTOR, schedule_add_min_selector)
+        schedule_add_min.click()
+        print("30분 진행 선택 완료")
+
         #회원 검색
         wait_count += 1  # WebDriverWait 호출 시 카운터 증가
         WebDriverWait(driver, 10).until(
@@ -1857,7 +2282,7 @@ def schedule_admin():
         )
         member_search = driver.find_element(By.CSS_SELECTOR, schedule_add_search_selector)
         member_search.clear()
-        member_search.send_keys("황성민아")
+        member_search.send_keys("황성민")
         member_search.send_keys(Keys.RETURN)
         print("회원 검색 완료")
 
@@ -1959,25 +2384,28 @@ time.sleep(1)
 
 #그룹 수업 관리 동작
 GX_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > nav > ul > div > div:nth-child(2) > details > a:nth-child(11) > li"
-GX_reservation_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.w-fit.gap-4.border-b.border-\[--netural-gray-scale-100\] > li:nth-child(2) > button"
-GX_class_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.w-fit.gap-4.border-b.border-\[--netural-gray-scale-100\] > li:nth-child(1) > button"
+GX_reservation_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.flex.justify-between.items-center.pt-5.pb-2\.5 > ul > li:nth-child(1) > button > p"
+GX_class_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.flex.justify-between.items-center.pt-5.pb-2\.5 > ul > li:nth-child(2) > button > p"
 GX_class_all_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(3) > button"
 GX_class_deactivate_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(2) > button"
 GX_class_active_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.flex.justify-between.items-center.pt-5.pb-2\.5 > ul.flex.h-10.p-\[0\.3125rem\].gap-\[0\.875rem\].bg-\[--netural-gray-scale-100\].rounded-lg > li:nth-child(1) > button"
 GX_class_add_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > footer > a > button"
 GX_Class_name_selector = "#className"
-GX_Class_employee_selector = "button.inline-flex.justify-between.w-full.bg-transparent"
+GX_class_category_selector = "#create > div:nth-child(2) > section > div:nth-child(2) > div.relative.inline-block.w-full.max-w-\[21\.375rem\]"
+GX_clsas_category_name_Xpath = "//button[text()='설정된카테고리_01']"
+GX_Class_employee_selector = "#create > div:nth-child(2) > section > div:nth-child(3) > div.relative.inline-block.w-full.max-w-\[21\.375rem\]"
 GX_Class_employee_name_Xpath = "//button[text()='황성민']"
-GX_Class_start_day_selector = "#create > div:nth-child(2) > section > div:nth-child(3) > div.w-full.max-w-\[29\.3rem\].grid.grid-cols-2.gap-\[1\.875rem\] > div:nth-child(1) > label"
-GX_Class_start_time_selector = "#create > div:nth-child(2) > section > div:nth-child(4) > div.w-full.max-w-\[27\.5rem\].grid.grid-cols-2.gap-\[1\.875rem\] > div:nth-child(1) > label"
-GX_Class_end_time_selector = "#create > div:nth-child(2) > section > div:nth-child(4) > div.w-full.max-w-\[27\.5rem\].grid.grid-cols-2.gap-\[1\.875rem\] > div:nth-child(2) > label"
+GX_Class_start_day_selector = "#create > div:nth-child(2) > section > div:nth-child(4) > div.flex.w-full.items-center.justify-end > div > div > label:nth-child(1)"
+GX_Class_start_time_selector = "#create > div:nth-child(2) > section > div:nth-child(5) > div.flex.w-full.items-center.justify-end > div > div > label:nth-child(1)"
+GX_Class_end_time_selector = "#create > div:nth-child(2) > section > div:nth-child(5) > div.flex.w-full.items-center.justify-end > div > div > label:nth-child(3)"
 GX_class_maxmember_selector = "#maxMember"
 GX_Class_minmember_selector = "#minMember"
 GX_Class_save_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > footer > button"
-GX_Class_update_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.grid.grid-cols-1.gap-5.pt-5.pb-\[1\.875rem\].xl\:grid-cols-3.lg\:grid-cols-2 > div:nth-child(1) > div.flex.flex-col.gap-4.pb-4 > div.flex.justify-between.items-center > div > a:nth-child(1) > svg"
-GX_Class_del_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.grid.grid-cols-1.gap-5.pt-5.pb-\[1\.875rem\].xl\:grid-cols-3.lg\:grid-cols-2 > div:nth-child(1) > div.flex.flex-col.gap-4.pb-4 > div.flex.justify-between.items-center > div > a:nth-child(2) > svg"
-GX_Class_copy_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.grid.grid-cols-1.gap-5.pt-5.pb-\[1\.875rem\].xl\:grid-cols-3.lg\:grid-cols-2 > div:nth-child(1) > div.flex.flex-col.gap-4.pb-4 > div.flex.justify-between.items-center > div > a:nth-child(3) > svg"
+GX_Class_update_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.grid.grid-cols-1.gap-5.pt-5.pb-\[1\.875rem\].xl\:grid-cols-3.lg\:grid-cols-2 > div:nth-child(1) > div.flex.flex-col.gap-2.pb-4 > div.flex.justify-between.items-center > div > a:nth-child(1) > svg"
+GX_Class_del_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.grid.grid-cols-1.gap-5.pt-5.pb-\[1\.875rem\].xl\:grid-cols-3.lg\:grid-cols-2 > div:nth-child(1) > div.flex.flex-col.gap-2.pb-4 > div.flex.justify-between.items-center > div > a:nth-child(2) > svg"
+GX_Class_copy_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.grid.grid-cols-1.gap-5.pt-5.pb-\[1\.875rem\].xl\:grid-cols-3.lg\:grid-cols-2 > div:nth-child(1) > div.flex.flex-col.gap-2.pb-4 > div.flex.justify-between.items-center > div > a:nth-child(3) > svg"
 GX_Class_del_con_selector = "body > div.flex.justify-center.items-center.fixed.inset-0.z-50.backdrop-filter.placeholder\:outline-none.focus\:outline-none.cursor-auto.duration-300.h-\[100svh\].rounded-md.bg-black\/60.backdrop-blur-sm > div > div > div > div > div.h-\[3\.125rem\].grid.grid-cols-2.font-medium > form > button"
+GX_Class_todays_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > div > div.flex.justify-between.items-center.pt-5.pb-2\.5 > ul > li:nth-child(3) > button > p"
 
 
 def GX_admin():
@@ -1993,18 +2421,6 @@ def GX_admin():
         print("그룹 수업 관리 선택 완료")
         
         #그룹 수업 관리 선택 후 딜레이 2초
-        time.sleep(1)
-
-        #그룹 수업 관리 예약 내역 탭 선택
-        wait_count += 1
-        WebDriverWait(driver, 10).until(
-            EC.presence_of_all_elements_located((By. CSS_SELECTOR, GX_reservation_selector))
-        )
-        GX_reservation = driver.find_element(By. CSS_SELECTOR, GX_reservation_selector)
-        GX_reservation.click()
-        print("예약 내역 탭 선택 완료")
-
-        #예약 내역 탭 선택 후 딜레이 2초
         time.sleep(1)
 
         #그룹 수업 관리 수업 목록 탭 선택
@@ -2073,6 +2489,28 @@ def GX_admin():
         random_name = generate_random_korean_name()
         GX_Class_name.send_keys(random_name)
         print("수업명 입력 완료")
+
+        time.sleep(1)
+
+        #수업 카테고리 드롭 다운
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, GX_class_category_selector))
+        )
+        GX_Class_category = driver.find_element(By. CSS_SELECTOR, GX_class_category_selector)
+        GX_Class_category.click()
+        print("수업 카테고리 드롭 다운 선택 완료")
+
+        time.sleep(1)
+
+        #수업 카테고리 선택 완료
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. XPATH, GX_clsas_category_name_Xpath))
+        )
+        GX_Class_category_name = driver.find_element(By. XPATH, GX_clsas_category_name_Xpath)
+        GX_Class_category_name.click()
+        print("수업 카테고리 선택 완료")
 
         time.sleep(1)
 
@@ -2267,6 +2705,30 @@ def GX_admin():
 
         time.sleep(1)
 
+        #그룹 수업 관리 오늘의 운동 탭 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, GX_Class_todays_selector))
+        )
+        GX_todays = driver.find_element(By. CSS_SELECTOR, GX_Class_todays_selector)
+        GX_todays.click()
+        print("오늘의 운동 탭 선택 완료")
+
+        #예약 내역 탭 선택 후 딜레이 2초
+        time.sleep(1)
+
+        #그룹 수업 관리 예약 내역 탭 선택
+        wait_count += 1
+        WebDriverWait(driver, 10).until(
+            EC.presence_of_all_elements_located((By. CSS_SELECTOR, GX_reservation_selector))
+        )
+        GX_reservation = driver.find_element(By. CSS_SELECTOR, GX_reservation_selector)
+        GX_reservation.click()
+        print("예약 내역 탭 선택 완료")
+
+        #예약 내역 탭 선택 후 딜레이 2초
+        time.sleep(1)
+
     except (NoSuchElementException, TimeoutException):
         print("!!!!! 그룹 수업 관리 관련 오류 발생 !!!!!")
 
@@ -2345,18 +2807,18 @@ time.sleep(1)
 #통계 관리
 statistics_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > nav > ul > div > div:nth-child(2) > details > a:nth-child(15) > li"
 statistics_sales_selector = "body > div.w-screen.h-\[100svh\].flex.overflow-hidden.bg-\[var\(--netural-gray-scale-white\)\] > div > div > div.px-10.sticky.top-0.flex.flex-col.items-start.pt-5.pb-2.bg-\[--netural-gray-scale-white\].z-10 > ul > button:nth-child(1) > li > h4"
-statistics_payment_selector =  "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.sticky.top-0.flex.flex-col.items-start.pt-5.pb-2.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(2) > button"
-statistics_fc_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.sticky.top-0.flex.flex-col.items-start.pt-5.pb-2.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(3) > button"
+statistics_payment_selector =  "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div.px-10.sticky.top-16.flex.flex-col.items-start.pt-4.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(2) > button"
+statistics_fc_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div.px-10.sticky.top-16.flex.flex-col.items-start.pt-4.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(3) > button"
 statistics_fc_add_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.flex.flex-col.gap-5 > div > div:nth-child(1) > ul > li:nth-child(1)"
 statistics_fc_re_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.flex.flex-col.gap-5 > div > div:nth-child(1) > ul > li:nth-child(2)"
 statistics_fc_expiration_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.flex.flex-col.gap-5 > div > div:nth-child(1) > ul > li:nth-child(3)"
-statistics_pt_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.sticky.top-0.flex.flex-col.items-start.pt-5.pb-2.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(4) > button"
+statistics_pt_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div.px-10.sticky.top-16.flex.flex-col.items-start.pt-4.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(4) > button"
 statistics_pt_add_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.flex.flex-col.gap-5 > div.w-full.flex.flex-col.gap-5.mt-3 > div.flex > ul > li:nth-child(1) > button"
 statistics_pt_re_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.flex.flex-col.gap-5 > div.w-full.flex.flex-col.gap-5.mt-3 > div.flex > ul > li:nth-child(2) > button"
 statistics_pt_expiration_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.flex.flex-col.gap-5 > div.w-full.flex.flex-col.gap-5.mt-3 > div.flex > ul > li:nth-child(3) > button"
-statistics_expiring_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.sticky.top-0.flex.flex-col.items-start.pt-5.pb-2.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(3) > button" #실서버 전용 3-> 5
-statistics_retained_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.sticky.top-0.flex.flex-col.items-start.pt-5.pb-2.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(6) > button"
-statistics_counsellor_selector = "body > div.relative.flex.bg-\[--netural-gray-scale-white\] > div > main > main > div.px-10.sticky.top-0.flex.flex-col.items-start.pt-5.pb-2.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(4) > button" #실서버 전용 4 -> 7
+statistics_expiring_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div.px-10.sticky.top-16.flex.flex-col.items-start.pt-4.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(5) > button" #실서버 전용 3-> 5
+statistics_retained_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div.px-10.sticky.top-16.flex.flex-col.items-start.pt-4.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(6) > button"
+statistics_counsellor_selector = "body > div.relative.flex-1.flex.bg-\[--netural-gray-scale-white\] > div > main > div.px-10.sticky.top-16.flex.flex-col.items-start.pt-4.bg-\[--netural-gray-scale-white\].z-10 > ul > li:nth-child(7) > button" #실서버 전용 4 -> 7
 
 #통계 관리 동작
 def statistics_admin():
@@ -2372,7 +2834,7 @@ def statistics_admin():
         print("통계 관리 선택 완료")
         
         #통계 관리 선택 후 딜레이 2초
-        time.sleep(1)
+        time.sleep(2)
 
         #결제 내역 선택
         wait_count += 1
@@ -2384,7 +2846,7 @@ def statistics_admin():
         print("결제 내역 탭 선택 완료")
 
         #결제 내역 탭 선택 후 딜레이 2초
-        time.sleep(1)
+        time.sleep(2)
 
         # #회원권 탭 선택
         # wait_count += 1
@@ -2493,7 +2955,7 @@ def statistics_admin():
         print("만기 예정 회원 탭 선택 완료")
 
         #만기 예정 회원 탭 선택 후 딜레이 2초
-        time.sleep(1)
+        time.sleep(5)
 
         # #보유 회원 탭 선택
         # wait_count += 1
@@ -2517,7 +2979,7 @@ def statistics_admin():
         print("상담자 탭 선택 완료")
 
         #상담자 탭 선택 후 딜레이 2초
-        time.sleep(1)
+        time.sleep(2)
 
     except (NoSuchElementException, TimeoutException):
          print("!!!!! 통계 관리 관련 오류 발생 !!!!!")
@@ -2549,8 +3011,13 @@ dashboard_admin()
 time.sleep(1)
 
 
+###################################################################################################
 # 작업 끝난 후 호출 횟수 출력
 print(f"{wait_count}개 항목 검증 완료")
+
+
+# 작업 완료 메시지 출력
+print("CRM 자동화 테스트 완료.")
 print("5초 후 종료됩니다.")
 
 # 카운트다운 출력
